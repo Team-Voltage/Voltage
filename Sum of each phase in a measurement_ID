@@ -6,3 +6,14 @@ measure=df.groupby((np.arange(len(df.columns)) // 3), axis=1).sum().add_prefix('
 
 #The code below sums up all the rows for each measurement_id.
 total=measure.sum(axis=0)
+
+
+# code to normalize the total
+norm=(total-min(total))/(max(total)-min(total))
+
+# code to get the z score
+z_score=(total-np.mean(total))/(np.sqrt(np.var(total)))
+
+#Doing natural log transformation
+abtotal=abs(total)
+natlog=np.log(abtotal)
