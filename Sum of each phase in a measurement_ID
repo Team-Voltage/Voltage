@@ -1,2 +1,8 @@
-import numpy as np
+import numpy as np #Importing numpy
+
+#The code below gets the sum for each phase for each measurement_id
+#For example in measurement_id 0, the first row is 18, 1, -19. The code will say m0's observation one is equal to 0.
 measure=df.groupby((np.arange(len(df.columns)) // 3), axis=1).sum().add_prefix('m')
+
+#The code below sums up all the rows for each measurement_id.
+total=measure.sum(axis=0)
