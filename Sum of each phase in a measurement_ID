@@ -17,3 +17,24 @@ z_score=(total-np.mean(total))/(np.sqrt(np.var(total)))
 #Doing natural log transformation
 abtotal=abs(total)
 natlog=np.log(abtotal)
+
+
+# Below plots a histogram and best fit line of the variable total
+import matplotlib.mlab as mlab
+import matplotlib.pyplot as plt
+
+mu = np.mean(total) # mean of distribution
+sigma = np.sqrt(np.var(total)) # standard deviation of distribution
+
+# the histogram of the data
+n, bins, patches = plt.hist(total, 60, normed=1, facecolor='green', alpha=0.75)
+#We need to figure out if 60 bins is correct
+
+# add a 'best fit' line
+y = mlab.normpdf( bins, mu, sigma)
+l = plt.plot(bins, y, 'r--', linewidth=2)
+
+#plot
+plt.grid(True)
+
+plt.show()
