@@ -1,0 +1,2 @@
+import numpy as np
+measure=df.groupby((np.arange(len(df.columns)) // 3), axis=1).sum().add_prefix('m')
