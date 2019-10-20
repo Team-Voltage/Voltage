@@ -1,4 +1,8 @@
 import numpy as np #Importing numpy
+import pandas as pd
+
+df = pd.read_excel (r'C:\Users\Paul\Documents\George Mason University\DAEN 690\Data\32 by 8711.xlsx') #Put the file path here
+
 
 #The code below gets the sum for each phase for each measurement_id
 #For example in measurement_id 0, the first row is 18, 1, -19. The code will say m0's observation one is equal to 0.
