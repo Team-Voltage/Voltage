@@ -1,0 +1,13 @@
+#for stateful LSTM, make pertussis the 1st feature in the column order
+ts_stateful = ts[['pertussis', 'influenza', 'salm', 
+'Precip_inches','Low_Temp_F', 'High_Temp_F']]
+
+#first convert to a 2d tensor of shape (timesteps, features)
+ts_stateful_matrix = ts_stateful.values
+
+#Normalize the whole matrix 
+mean = ts_stateful_matrix.mean(axis=0)
+ts_stateful_matrix -= mean
+
+std = ts_stateful_matrix.std(axis=0)
+ts_stateful_matrix /= std
