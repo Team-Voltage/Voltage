@@ -1,0 +1,519 @@
+import numpy as np
+
+from numpy import concatenate
+import matplotlib.pyplot as plt
+import pandas as pd
+from pandas import DataFrame
+from pandas import concat
+from datetime import datetime
+from sklearn import preprocessing
+#from keras import models
+#from keras import layers
+#from keras.models import Sequential
+#from keras.layers import Dense
+#from keras.layers import LSTM
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error
+import math
+import requests
+import json
+#from keras.callbacks import TensorBoard
+from IPython.display import SVG
+#from keras.utils.vis_utils import model_to_dot
+#%matplotlib inline
+
+
+In [21]:
+pwd
+
+
+
+
+In [42]:
+# Load the Pandas libraries with alias 'pd'
+
+#import pandas as pd
+# Read data from file 'filename.csv'
+# (in the same directory that your python process is based)
+# Control delimiters, rows, column names with read_csv (see later)
+df = pd.read_csv("/Users/jlartey10/Desktop/ARGO/merged_t_first_100.csv")
+
+print(type(df))
+
+
+
+In [23]:
+# Preview the first 5 lines of the loaded data
+df.head()
+
+
+Group By Id Measurement
+In [46]:
+import numpy as np #Importing numpy
+
+# applying groupby() function to
+# group the data on 'id_measurement' value.
+grouped_df=df.groupby('id_measurement')
+
+# Let's print the first entries
+# in all the groups formed.
+grouped_df.first()
+
+
+In [48]:
+# Finding the values contained in the "0" group
+
+grouped_df.get_group(0)
+
+
+In [49]:
+# Finding the values contained in the "1" group
+
+grouped_df.get_group(1)
+
+
+In [50]:
+# applying groupby() function to
+# group the data on team value.
+target_group=df.groupby('target')
+
+# Let's print the first entries
+# in all the groups formed.
+target_group.get_group(0)
+
+
+
+In [51]:
+# Let's print the first entries
+# in all the groups formed.
+target_group.get_group(1)
+
+
+In [53]:
+#Group by id_measurement and sum each id_measurement
+sum_by_id_measurement = df.groupby('id_measurement').sum()
+# Delete multiple columns from the dataframe
+sum_by_id_measurement = sum_by_id_measurement.drop(["Unnamed: 0", "signal_id", "phase", "target"], axis=1)
+#Print
+sum_by_id_measurement
+
+
+
+# Transpose phased summed and grouped by id measurement data
+In [54]:
+# return the transpose 
+#
+transposed_sumed_grouped = sum_by_id_measurement.transpose()
+
+transposed_sumed_grouped.head(5)
+Out[54]:
+id_measurement	0	1	2	3	4	5	6	7	8	9	...	24	25	26	27	28	29	30	31	32	33
+V2	0	-2	-1	-2	-2	-1	1	1	-3	-4	...	-7	-3	2	-3	-2	0	-2	-1	1	21
+V3	-1	-4	-1	-3	1	0	-1	3	-2	-4	...	-2	-7	3	0	0	-1	-1	2	0	19
+V4	-4	-4	-5	-3	0	-4	0	4	-3	-4	...	-2	-3	3	1	-1	-4	2	-1	1	19
+V5	0	-1	0	-2	-1	2	1	6	-3	-4	...	-6	-1	2	2	-1	-5	2	-3	1	21
+V6	-1	-1	-3	2	-3	-4	-1	5	-3	-4	...	-11	1	0	-2	-1	-7	-2	-1	0	20
+5 rows × 34 columns
+Visualization: Grouped id measurement
+In [55]:
+#ID measurement 0, 1, 2
+
+df1 = DataFrame(transposed_sumed_grouped, columns= [0, 1, 2])
+df1.head()
+Out[55]:
+0	1	2
+V2	0	-2	-1
+V3	-1	-4	-1
+V4	-4	-4	-5
+V5	0	-1	0
+V6	-1	-1	-3
+In [56]:
+#This only displays colums (ID Measurement) 0,1,2 of the train data
+
+#Signal(Column) 1 has partial discharge
+
+import pandas as pd
+import os
+import numpy as np
+import pyarrow.parquet as pq
+from matplotlib import pyplot as plt
+import seaborn as sns
+
+fig=plt.figure(figsize=(8, 8), dpi= 100, facecolor='w', edgecolor='k')
+plot_labels = ['Signal(Column) 0', 'Signal(Column) 1', 'Signal(Column) 2']
+colores = ["#3D9140", "#FF6103", "#8B2323"]
+plt.plot(list(range(len(transposed_sumed_grouped))), transposed_sumed_grouped[0], '-', label=plot_labels[0
+], color=colores[0])
+plt.plot(list(range(len(transposed_sumed_grouped))), transposed_sumed_grouped[1], '-', label=plot_labels[1
+], color=colores[1])
+plt.plot(list(range(len(transposed_sumed_grouped))), transposed_sumed_grouped[2], '-', label=plot_labels[2
+], color=colores[2])
+plt.ylim((-30, 30))
+plt.legend(loc='lower right')
+plt.title('Raw Signal')
+plt.xlabel('Sample')
+plt.ylabel('Amplitude')
+Out[56]:
+Text(0, 0.5, 'Amplitude')
+
+In [58]:
+# Grouped ID measurement Column 1 has partial discharge
+
+
+fig=plt.figure(figsize=(8, 8), dpi= 100, facecolor='w', edgecolor='k')
+plot_labels = ['Signal(Column) 3', 'Signal(Column) 4', 'Signal(Column) 5']
+colores = ["#3D9140", "#FF6103", "#8B2323"]
+plt.plot(list(range(len(transposed_sumed_grouped))), transposed_sumed_grouped[1], '-', label=plot_labels[0
+], color=colores[0])
+plt.ylim((-30, 30))
+plt.legend(loc='lower right')
+plt.title('Raw Signal')
+plt.xlabel('Sample')
+plt.ylabel('Amplitude')
+Out[58]:
+Text(0, 0.5, 'Amplitude')
+
+In [59]:
+# Grouped ID measurement Column 0 has partial discharge or fault
+
+
+fig=plt.figure(figsize=(8, 8), dpi= 100, facecolor='w', edgecolor='k')
+plot_labels = ['Signal(Column) 3', 'Signal(Column) 4', 'Signal(Column) 5']
+colores = ["#3D9140", "#FF6103", "#8B2323"]
+plt.plot(list(range(len(transposed_sumed_grouped))), transposed_sumed_grouped[0], '-', label=plot_labels[0
+], color=colores[0])
+plt.ylim((-30, 30))
+plt.legend(loc='lower right')
+plt.title('Raw Signal')
+plt.xlabel('Sample')
+plt.ylabel('Amplitude')
+Out[59]:
+Text(0, 0.5, 'Amplitude')
+
+Raw Data: Remove meta data as needed
+In [24]:
+# Delete multiple columns from the dataframe
+df = df.drop(["id_measurement", "Unnamed: 0", "signal_id", "phase",
+"target"], axis=1)
+
+# Preview the first 5 lines of the loaded data
+df.head()
+Out[24]:
+V2	V3	V4	V5	V6	V7	V8	V9	V10	V11	...	V8703	V8704	V8705	V8706	V8707	V8708	V8709	V8710	V8711	V8712
+0	18	18	17	18	18	18	19	18	18	17	...	16	17	16	15	16	16	18	19	15	18
+1	1	0	-1	1	0	0	1	0	0	0	...	2	2	2	0	1	0	3	4	1	4
+2	-19	-19	-20	-19	-19	-20	-18	-19	-20	-19	...	-22	-21	-22	-23	-23	-23	-20	-20	-24	-20
+3	-16	-17	-17	-16	-16	-15	-16	-17	-18	-17	...	-14	-15	-16	-16	-16	-14	-13	-13	-14	-15
+4	-5	-6	-6	-5	-5	-4	-5	-7	-7	-7	...	-6	-6	-8	-7	-7	-7	-6	-5	-6	-7
+5 rows × 8711 columns
+Transpose
+In [25]:
+# return the transpose 
+transposed_df = df.transpose()
+
+transposed_df.head(5)
+Out[25]:
+0	1	2	3	4	5	6	7	8	9	...	90	91	92	93	94	95	96	97	98	99
+V2	18	1	-19	-16	-5	19	-15	15	-1	-16	...	15	1	-18	10	7	-18	19	-17	-1	21
+V3	18	0	-19	-17	-6	19	-17	16	0	-15	...	15	2	-18	11	8	-17	18	-18	0	19
+V4	17	-1	-20	-17	-6	19	-17	15	-3	-15	...	16	3	-17	10	7	-18	20	-18	-1	19
+V5	18	1	-19	-16	-5	20	-16	16	0	-15	...	16	3	-17	9	7	-19	19	-17	-1	21
+V6	18	0	-19	-16	-5	20	-17	16	-2	-14	...	15	1	-18	10	7	-18	19	-18	-1	20
+5 rows × 100 columns
+Visualization
+In [29]:
+df1 = DataFrame(transposed_df, columns= [0, 1, 2])
+df1.head()
+Out[29]:
+0	1	2
+V2	18	1	-19
+V3	18	0	-19
+V4	17	-1	-20
+V5	18	1	-19
+V6	18	0	-19
+In [36]:
+#This only displays colums 0,1,2 of the train data
+import pandas as pd
+import os
+import numpy as np
+import pyarrow.parquet as pq
+from matplotlib import pyplot as plt
+import seaborn as sns
+
+fig=plt.figure(figsize=(8, 8), dpi= 100, facecolor='w', edgecolor='k')
+plot_labels = ['Signal(Column) 0', 'Signal(Column) 1', 'Signal(Column) 2']
+colores = ["#3D9140", "#FF6103", "#8B2323"]
+plt.plot(list(range(len(transposed_df))), transposed_df[0], '-', label=plot_labels[0
+], color=colores[0])
+plt.plot(list(range(len(transposed_df))), transposed_df[1], '-', label=plot_labels[1
+], color=colores[1])
+plt.plot(list(range(len(transposed_df))), transposed_df[2], '-', label=plot_labels[2
+], color=colores[2])
+plt.ylim((-30, 30))
+plt.legend(loc='lower right')
+plt.title('Raw Signal')
+plt.xlabel('Sample')
+plt.ylabel('Amplitude')
+Out[36]:
+Text(0, 0.5, 'Amplitude')
+
+In [38]:
+# Columns with partial discharge
+
+
+fig=plt.figure(figsize=(8, 8), dpi= 100, facecolor='w', edgecolor='k')
+plot_labels = ['Signal(Column) 3', 'Signal(Column) 4', 'Signal(Column) 5']
+colores = ["#3D9140", "#FF6103", "#8B2323"]
+plt.plot(list(range(len(transposed_df))), transposed_df[3], '-', label=plot_labels[0
+], color=colores[0])
+plt.plot(list(range(len(transposed_df))), transposed_df[4], '-', label=plot_labels[1
+], color=colores[1])
+plt.plot(list(range(len(transposed_df))), transposed_df[5], '-', label=plot_labels[2
+], color=colores[2])
+plt.ylim((-30, 30))
+plt.legend(loc='lower right')
+plt.title('Raw Signal')
+plt.xlabel('Sample')
+plt.ylabel('Amplitude')
+Out[38]:
+Text(0, 0.5, 'Amplitude')
+
+In [39]:
+import pywt
+
+from statsmodels.robust import mad
+from scipy import signal
+# In[34]:
+#This only displays only one denoised colums of the train data (Column 0 and 3)
+In [40]:
+#This only displays only one denoised colums of the train data (Column 0 and 3)
+
+def waveletSmooth( x, wavelet="db4", level=1, title=None ):
+    coeff = pywt.wavedec( x, wavelet, mode="per" )
+    sigma = mad( coeff[-level] )
+    uthresh = sigma * np.sqrt( 2*np.log( len( x ) ) )
+    coeff[1:] = ( pywt.threshold( i, value=uthresh, mode="soft" ) for i in coeff[1:] )
+
+    y = pywt.waverec( coeff, wavelet, mode="per" )
+    f, ax = plt.subplots(figsize=(10, 4), dpi= 100, facecolor='w', edgecolor='k')
+    colores = ["#3D9140", "#FF6103", "#8B2323"]
+    plt.plot( x, color="#FF6103", alpha=0.5, label="Original")
+    plt.plot( y, color="#8B2323", label="Transformed" )
+    plt.ylim((-50, 50))
+    plt.xlabel('Sample')
+    plt.ylabel('Amplitude')
+    plt.legend(loc='lower right')
+    if title:
+        ax.set_title(title)
+    ax.set_xlim((0,len(y)))
+    return y
+title1 = 'Wavelet Transform De-Noised Signal No-Fault'
+title2 = 'Wavelet Transform De-Noised Signal with Fault'
+signal_1 =  waveletSmooth(transposed_df[0], wavelet="db4", level=1, title=title1)
+signal_2 =  waveletSmooth(transposed_df[3], wavelet="db4", level=1, title=title2 )
+Error in callback <function flush_figures at 0x115356378> (for post_execute):
+---------------------------------------------------------------------------
+KeyboardInterrupt                         Traceback (most recent call last)
+//anaconda3/lib/python3.7/site-packages/ipykernel/pylab/backend_inline.py in flush_figures()
+    115         # ignore the tracking, just draw and close all figures
+    116         try:
+--> 117             return show(True)
+    118         except Exception as e:
+    119             # safely show traceback if in IPython, else raise
+
+//anaconda3/lib/python3.7/site-packages/ipykernel/pylab/backend_inline.py in show(close, block)
+     37             display(
+     38                 figure_manager.canvas.figure,
+---> 39                 metadata=_fetch_figure_metadata(figure_manager.canvas.figure)
+     40             )
+     41     finally:
+
+//anaconda3/lib/python3.7/site-packages/IPython/core/display.py in display(include, exclude, metadata, transient, display_id, *objs, **kwargs)
+    304             publish_display_data(data=obj, metadata=metadata, **kwargs)
+    305         else:
+--> 306             format_dict, md_dict = format(obj, include=include, exclude=exclude)
+    307             if not format_dict:
+    308                 # nothing to display (e.g. _ipython_display_ took over)
+
+//anaconda3/lib/python3.7/site-packages/IPython/core/formatters.py in format(self, obj, include, exclude)
+    178             md = None
+    179             try:
+--> 180                 data = formatter(obj)
+    181             except:
+    182                 # FIXME: log the exception
+
+<//anaconda3/lib/python3.7/site-packages/decorator.py:decorator-gen-9> in __call__(self, obj)
+
+//anaconda3/lib/python3.7/site-packages/IPython/core/formatters.py in catch_format_error(method, self, *args, **kwargs)
+    222     """show traceback on failed format call"""
+    223     try:
+--> 224         r = method(self, *args, **kwargs)
+    225     except NotImplementedError:
+    226         # don't warn on NotImplementedErrors
+
+//anaconda3/lib/python3.7/site-packages/IPython/core/formatters.py in __call__(self, obj)
+    339                 pass
+    340             else:
+--> 341                 return printer(obj)
+    342             # Finally look for special method names
+    343             method = get_real_method(obj, self.print_method)
+
+//anaconda3/lib/python3.7/site-packages/IPython/core/pylabtools.py in <lambda>(fig)
+    242 
+    243     if 'png' in formats:
+--> 244         png_formatter.for_type(Figure, lambda fig: print_figure(fig, 'png', **kwargs))
+    245     if 'retina' in formats or 'png2x' in formats:
+    246         png_formatter.for_type(Figure, lambda fig: retina_figure(fig, **kwargs))
+
+//anaconda3/lib/python3.7/site-packages/IPython/core/pylabtools.py in print_figure(fig, fmt, bbox_inches, **kwargs)
+    126 
+    127     bytes_io = BytesIO()
+--> 128     fig.canvas.print_figure(bytes_io, **kw)
+    129     data = bytes_io.getvalue()
+    130     if fmt == 'svg':
+
+//anaconda3/lib/python3.7/site-packages/matplotlib/backend_bases.py in print_figure(self, filename, dpi, facecolor, edgecolor, orientation, format, bbox_inches, **kwargs)
+   2058                     bbox_artists = kwargs.pop("bbox_extra_artists", None)
+   2059                     bbox_inches = self.figure.get_tightbbox(renderer,
+-> 2060                             bbox_extra_artists=bbox_artists)
+   2061                     pad = kwargs.pop("pad_inches", None)
+   2062                     if pad is None:
+
+//anaconda3/lib/python3.7/site-packages/matplotlib/figure.py in get_tightbbox(self, renderer, bbox_extra_artists)
+   2364 
+   2365         for a in artists:
+-> 2366             bbox = a.get_tightbbox(renderer)
+   2367             if bbox is not None and (bbox.width != 0 or bbox.height != 0):
+   2368                 bb.append(bbox)
+
+//anaconda3/lib/python3.7/site-packages/matplotlib/axes/_base.py in get_tightbbox(self, renderer, call_axes_locator, bbox_extra_artists)
+   4346 
+   4347         if self.axison:
+-> 4348             bb_xaxis = self.xaxis.get_tightbbox(renderer)
+   4349             if bb_xaxis:
+   4350                 bb.append(bb_xaxis)
+
+//anaconda3/lib/python3.7/site-packages/matplotlib/axis.py in get_tightbbox(self, renderer)
+   1161             return
+   1162 
+-> 1163         ticks_to_draw = self._update_ticks()
+   1164 
+   1165         self._update_label_position(renderer)
+
+//anaconda3/lib/python3.7/site-packages/matplotlib/axis.py in _update_ticks(self)
+   1079         """
+   1080         major_locs = self.get_majorticklocs()
+-> 1081         major_labels = self.major.formatter.format_ticks(major_locs)
+   1082         major_ticks = self.get_major_ticks(len(major_locs))
+   1083         self.major.formatter.set_locs(major_locs)
+
+//anaconda3/lib/python3.7/site-packages/matplotlib/ticker.py in format_ticks(self, values)
+    257         """Return the tick labels for all the ticks at once."""
+    258         self.set_locs(values)
+--> 259         return [self(value, i) for i, value in enumerate(values)]
+    260 
+    261     def format_data(self, value):
+
+//anaconda3/lib/python3.7/site-packages/matplotlib/ticker.py in <listcomp>(.0)
+    257         """Return the tick labels for all the ticks at once."""
+    258         self.set_locs(values)
+--> 259         return [self(value, i) for i, value in enumerate(values)]
+    260 
+    261     def format_data(self, value):
+
+//anaconda3/lib/python3.7/site-packages/matplotlib/category.py in __call__(self, x, pos)
+    152             return ""
+    153         r_mapping = {v: StrCategoryFormatter._text(k)
+--> 154                      for k, v in self._units.items()}
+    155         return r_mapping.get(int(np.round(x)), '')
+    156 
+
+//anaconda3/lib/python3.7/site-packages/matplotlib/category.py in <dictcomp>(.0)
+    152             return ""
+    153         r_mapping = {v: StrCategoryFormatter._text(k)
+--> 154                      for k, v in self._units.items()}
+    155         return r_mapping.get(int(np.round(x)), '')
+    156 
+
+KeyboardInterrupt: 
+In [ ]:
+%matplotlib inline
+
+import matplotlib.pyplot as plt
+
+import os
+#import numpy as np
+import pyarrow.parquet as pq
+#from matplotlib import pyplot as plt
+import seaborn as sns
+
+# Delete multiple columns from the dataframe
+train = df.drop(["id_measurement", "Unnamed: 0", "signal_id", "phase",
+"target"], axis=1)
+
+train.head()
+In [ ]:
+from pandas import DataFrame
+
+df1 = DataFrame(train, columns= ['V2', 'V3', 'V4'])
+df1.head()
+In [ ]:
+import numpy as np #Importing numpy
+
+# applying groupby() function to
+# group the data on 'id_measurement' value.
+measure=df.groupby('id_measurement')
+
+# Let's print the first entries
+# in all the groups formed.
+measure.first()
+In [ ]:
+# Finding the values contained in the "0" group
+
+measure.get_group(0)
+In [ ]:
+# Finding the values contained in the "1" group
+
+measure.get_group(1)
+In [ ]:
+# applying groupby() function to
+# group the data on team value.
+target_group=df.groupby('target')
+
+# Let's print the first entries
+# in all the groups formed.
+target_group.get_group(0)
+In [ ]:
+# Let's print the first entries
+# in all the groups formed.
+target_group.get_group(1)
+In [ ]:
+#Group by id_measurement and sum each id_measurement
+sum_by_id_measurement = df.groupby('id_measurement').sum()
+# Delete multiple columns from the dataframe
+sum_by_id_measurement = sum_by_id_measurement.drop(["Unnamed: 0", "signa
+l_id", "phase", "target"], axis=1)
+#Print
+sum_by_id_measurement
+In [ ]:
+#Sum each row of combined id_measurement
+temp = sum_by_id_measurement.sum(axis=1)
+
+temp
+In [ ]:
+#I normalized the data per below: https://tm3.ghost.io/2018/09/05/building-lstms-for-time-series-forecasting/
+
+def standardized_matrix(sum_by_id_measurement):
+#first convert to a 2d tensor of shape (timesteps, features)
+sum_by_id_measurement_matrix = sum_by_id_measurement.values
+#Error fix by converting data to float,
+sum_by_id_measurement_matrix = sum_by_id_measurement_matrix.astype(
+'float32')
+#Normalize the whole matrix
+mean = sum_by_id_measurement_matrix.mean(axis=0)
+sum_by_id_measurement_matrix -= mean
+std = sum_by_id_measurement_matrix.std(axis=0)
+sum_by_id_measurement_matrix /= std
+print (sum_by_id_measurement_matrix.shape)
+return sum_by_id_measurement_matrix
+new_matrix = standardized_matrix(sum_by_id_measurement)
