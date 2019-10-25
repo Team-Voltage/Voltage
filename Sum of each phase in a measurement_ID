@@ -47,5 +47,5 @@ plt.show()
 # To get the critical points (Partial discharges)
 j2 = [i for i in jz_score if i >= st.norm.ppf(.975)]
 #1.959963984540054
-j2 = [i for i in z_score if i <= st.norm.ppf(.025)]
+j3 = [i for i in z_score if i <= st.norm.ppf(.025)]
 #-1.960063984540054
