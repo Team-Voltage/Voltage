@@ -8,6 +8,11 @@ df = pd.read_excel (r'C:\Users\Paul\Documents\George Mason University\DAEN 690\D
 #For example in measurement_id 0, the first row is 18, 1, -19. The code will say m0's observation one is equal to 0.
 measure=df.groupby((np.arange(len(df.columns)) // 3), axis=1).sum().add_prefix('m')
 
+
+#Get the absolute value of the sums of three phases
+measure = abs(measure)
+
+
 #The code below sums up all the rows for each measurement_id.
 total=measure.sum(axis=0)
 
@@ -44,8 +49,7 @@ plt.grid(True)
 plt.show()
 
 
-# To get the critical points (Partial discharges)
-j2 = [i for i in jz_score if i >= st.norm.ppf(.975)]
-#1.959963984540054
-j3 = [i for i in z_score if i <= st.norm.ppf(.025)]
-#-1.960063984540054
+import scipy.stats as st
+PD_Lower = [i for i in z_score if i <= st.norm.ppf(.025)]
+PD_Higher = [i for i in z_score if i >= st.norm.ppf(.975)]
+PD= PD_Lower + PD_Higher
