@@ -14,11 +14,16 @@ import numpy as np
 from matplotlib import pyplot as plt
 import seaborn as sns
 
+import pywt
+from scipy import signal
+from statsmodels.robust import mad
+
+
 
 
 train = pq.read_table('/home/jlartey/train.parquet')
 train = train.to_pandas()
-print(train.head())
+#print(train.head())
 
 
 #Visualization of first 3 phases with target 0
@@ -26,11 +31,11 @@ print(train.head())
 fig=plt.figure(figsize=(8, 8), dpi= 100, facecolor='w', edgecolor='k')
 plot_labels = ['Phase 1', 'Phase 2', 'Phase 3']
 colores = ["#3D9140", "#FF6103", "#8B2323"]
-plt.plot(list(range(len(train))), train[0], '-', label=plot_labels[0
+plt.plot(list(range(len(train))), train['0'], '-', label=plot_labels[0
 ], color=colores[0])
-plt.plot(list(range(len(train))), train[1], '-', label=plot_labels[1
+plt.plot(list(range(len(train))), train['1'], '-', label=plot_labels[1
 ], color=colores[1])
-plt.plot(list(range(len(train))), train[2], '-', label=plot_labels[2
+plt.plot(list(range(len(train))), train['2'], '-', label=plot_labels[2
 ], color=colores[2])
 plt.ylim((-30, 30))
 plt.legend(loc='lower right')
@@ -41,14 +46,13 @@ plt.ylabel('Amplitude')
 
 #Box plot of first 3 phases with target 0
  
-value1 = train[0]
-value2 = train[1]
-value3 = train[2]
+value1 = train['0']
+value2 = train['1']
+value3 = train['2']
  
 box_plot_data=[value1,value2,value3]
 plt.boxplot(box_plot_data,patch_artist=True,labels=['Phase A','Phase B','Phase C'])
 plt.show()
-
 
 
 #Visualization of second 3 phases with target 1
@@ -57,11 +61,11 @@ plt.show()
 fig=plt.figure(figsize=(8, 8), dpi= 100, facecolor='w', edgecolor='k')
 plot_labels = ['Phase 1', 'Phase 2', 'Phase 3']
 colores = ["#3D9140", "#FF6103", "#8B2323"]
-plt.plot(list(range(len(train))), train[3], '-', label=plot_labels[0
+plt.plot(list(range(len(train))), train['3'], '-', label=plot_labels[0
 ], color=colores[0])
-plt.plot(list(range(len(train))), train[4], '-', label=plot_labels[1
+plt.plot(list(range(len(train))), train['4'], '-', label=plot_labels[1
 ], color=colores[1])
-plt.plot(list(range(len(train))), train[5], '-', label=plot_labels[2
+plt.plot(list(range(len(train))), train['5'], '-', label=plot_labels[2
 ], color=colores[2])
 plt.ylim((-30, 30))
 plt.legend(loc='lower right')
@@ -72,15 +76,13 @@ plt.ylabel('Amplitude')
 
 #Box plot of second 3 phases with target 1
  
-value1 = train[3]
-value2 = train[4]
-value3 = train[5]
+value1 = train['3']
+value2 = train['4']
+value3 = train['5']
  
 box_plot_data=[value1,value2,value3]
 plt.boxplot(box_plot_data,patch_artist=True,labels=['Phase A','Phase B','Phase C'])
 plt.show()
-
-
 
 
 
@@ -94,12 +96,10 @@ plt.show()
 # To explore deeply into Wavelet : "A guide for using the Wavelet Transform in Machine Learning"
 #http://ataspinar.com/2018/12/21/a-guide-for-using-the-wavelet-transform-in-machine-learning/
 
-import pywt
-from statsmodels.robust import mad
-from scipy import signal
+
 def waveletSmooth( x, wavelet="db4", level=1, title=None ):
     coeff = pywt.wavedec( x, wavelet, mode="per" )
-    sigma = mad( coeff[-level] )
+    sigma = mad( coeff[-level] )  #The Median Absolute Deviation
     uthresh = sigma * np.sqrt( 2*np.log( len( x ) ) )
     coeff[1:] = ( pywt.threshold( i, value=uthresh, mode="soft" ) for i in coeff[1:] )
 
@@ -127,21 +127,17 @@ for y in train:
     z = (train[y])-signal_n # z= noise
     zlist.append(z)
     print(signal_n) 
-    
-    
+
 # Tranform noisy data list to dataframe 
 dfList = pd.DataFrame(mylist)
 dfList = dfList.transpose()
 print(dfList.transpose().head())
-
 
 # Tranform list of "original data - noisy data" to dataframe
 zdf = pd.DataFrame(zlist)
 zdf = zdf.transpose()
 print(zdf.transpose().head())
 zdf.to_csv(r'/home/jlartey/denoisedData.csv')
-
-
 
 
 
