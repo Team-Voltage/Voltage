@@ -1,0 +1,5 @@
+#This is for when the data set is in row form
+
+idx = df.groupby('id_measurement').apply(lambda x: x.sample(frac=0.2, random_state = 0)).index.get_level_values(1)
+test = df[df['id_measurement'].isin(idx)]
+train = df[~df['id_measurement'].isin(idx)]
