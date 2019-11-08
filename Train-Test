@@ -3,3 +3,7 @@
 idx = df.groupby('id_measurement').apply(lambda x: x.sample(frac=0.2, random_state = 0)).index.get_level_values(1)
 test = df[df['id_measurement'].isin(idx)]
 train = df[~df['id_measurement'].isin(idx)]
+
+
+#Keeping every 3,125 columns (800,000/256=3,125). NOVEC can only sample 256 per cycle.
+test_NOVEC = test[test.columns[::3125]]
