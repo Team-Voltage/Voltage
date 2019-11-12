@@ -23,7 +23,10 @@ from statsmodels.robust import mad
 
 train = pq.read_table('/home/jlartey/train.parquet')
 train = train.to_pandas()
-#print(train.head())
+
+temp = train.head()
+
+print(temp)
 
 
 #Visualization of first 3 phases with target 0
@@ -52,7 +55,7 @@ value3 = train['2']
  
 box_plot_data=[value1,value2,value3]
 plt.boxplot(box_plot_data,patch_artist=True,labels=['Phase A','Phase B','Phase C'])
-plt.show()
+print(plt.show())
 
 
 #Visualization of second 3 phases with target 1
@@ -85,7 +88,6 @@ plt.boxplot(box_plot_data,patch_artist=True,labels=['Phase A','Phase B','Phase C
 plt.show()
 
 
-
 # Step 2: Using Pywavelets to remove noise (High-frequency noise)
 
 # References
@@ -96,48 +98,58 @@ plt.show()
 # To explore deeply into Wavelet : "A guide for using the Wavelet Transform in Machine Learning"
 #http://ataspinar.com/2018/12/21/a-guide-for-using-the-wavelet-transform-in-machine-learning/
 
+try:
+    def waveletSmooth( x, wavelet="db4", level=1, title=None ):
+        coeff = pywt.wavedec( x, wavelet, mode="per" )
+        sigma = mad( coeff[-level] )
+        uthresh = sigma * np.sqrt( 2*np.log( len( x ) ) )
+        coeff[1:] = ( pywt.threshold( i, value=uthresh, mode="soft" ) for i in coeff[1:] )
 
-def waveletSmooth( x, wavelet="db4", level=1, title=None ):
-    coeff = pywt.wavedec( x, wavelet, mode="per" )
-    sigma = mad( coeff[-level] )  #The Median Absolute Deviation
-    uthresh = sigma * np.sqrt( 2*np.log( len( x ) ) )
-    coeff[1:] = ( pywt.threshold( i, value=uthresh, mode="soft" ) for i in coeff[1:] )
+        y = pywt.waverec( coeff, wavelet, mode="per" )
+        f, ax = plt.subplots(figsize=(8, 4), dpi= 100, facecolor='w', edgecolor='k')
+        colores = ["#3D9140", "#FF6103", "#8B2323"]
+        plt.plot( x, color="#FF6103", alpha=0.5, label="Original")
+        plt.plot( y, color="#8B2323", label="Transformed" )
+        plt.ylim((-50, 50))
+        plt.xlabel('Sample')
+        plt.ylabel('Amplitude')
+        plt.legend(loc='lower right')
+        if title:
+            ax.set_title(title)
+        ax.set_xlim((0,len(y)))
+        return y
+except Exception as e: print(e)
 
-    y = pywt.waverec( coeff, wavelet, mode="per" )
-    f, ax = plt.subplots(figsize=(8, 4), dpi= 100, facecolor='w', edgecolor='k')
-    colores = ["#3D9140", "#FF6103", "#8B2323"]
-    plt.plot( x, color="#FF6103", alpha=0.5, label="Original")
-    plt.plot( y, color="#8B2323", label="Transformed" )
-    plt.ylim((-50, 50))
-    plt.xlabel('Sample')
-    plt.ylabel('Amplitude')
-    plt.legend(loc='lower right')
-    if title:
-        ax.set_title(title)
-    ax.set_xlim((0,len(y)))
-    return y
+try:
+    #Creat list to store output of denoised data
+    mylist = [] #noisy data
+    zlist = [] #denoised data
+    for j in train:
+        title1 = 'Discrete Wavelet Transformed Signal: ' + str(j)
+        signal_n = waveletSmooth(train[j], wavelet="db4", level=1, title=title1)
+        mylist.append(signal_n)
+        z = (train[j])-signal_n # z= noise
+        zlist.append(z)
+        print(signal_n) 
+except Exception as e: print(e)
 
-#Creat list to store output of denoised data
-mylist = [] #noisy data
-zlist = [] #denoised data
-for y in train:
-    title1 = 'Discrete Wavelet Transformed Signal: ' + str(y)
-    signal_n = waveletSmooth(train[y], wavelet="db4", level=1, title=title1)
-    mylist.append(signal_n)
-    z = (train[y])-signal_n # z= noise
-    zlist.append(z)
-    print(signal_n) 
+try:
+    # Tranform noisy data list to dataframe 
+    dfList = pd.DataFrame(mylist)
+    dfList = dfList.transpose()
+    print(dfList.transpose().head())
+except Exception as e: print(e)
 
-# Tranform noisy data list to dataframe 
-dfList = pd.DataFrame(mylist)
-dfList = dfList.transpose()
-print(dfList.transpose().head())
+try:
+    # Tranform list of "original data - noisy data" to dataframe
+    zdf = pd.DataFrame(zlist)
+    zdf = zdf.transpose()
+    print(zdf.transpose().head())
+    zdf.to_csv('/scratch/jlartey/denoisedData.csv')
+except Exception as e: print(e)
 
-# Tranform list of "original data - noisy data" to dataframe
-zdf = pd.DataFrame(zlist)
-zdf = zdf.transpose()
-print(zdf.transpose().head())
-zdf.to_csv(r'/home/jlartey/denoisedData.csv')
+
+
 
 
 
