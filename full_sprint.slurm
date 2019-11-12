@@ -41,8 +41,8 @@
 ## You can improve your scheduling priority by specifying upper limits on
 ## needed resources, but jobs that exceed these values will be terminated.
 ## Check your "Job Ended" emails for actual resource usage info as a guide.
-#SBATCH --mem=5G        # Total memory needed per task (units: K,M,G,T)
-#SBATCH --time=0-01:00  # Total time needed for job: Days-Hours:Minutes
+#SBATCH --mem=150G        # Total memory needed per task (units: K,M,G,T)
+#SBATCH --time=0-05:00  # Total time needed for job: Days-Hours:Minutes
 
 ## ##### Optional stuff #####
 ## From this point on, Slurm SBATCH commands are commented out (ignored).
@@ -66,6 +66,7 @@
 ##SBATCH --cpus-per-task <C>   # Request extra CPUs for threads
 ##SBATCH --mem-per-cpu <M>     # If your threads us a lot of memory, and you
                                # plan to vary # of threads, use this not --mem=
+#SBATCH --cpus-per-task=30
 
 ## ----- Parallel Processes  -----
 ## Some libraries (MPI) implement parallelism using processes that communicate.
@@ -88,30 +89,11 @@
 ##SBATCH --error=/scratch/%u/%x-%N-%A-%a.err   # Error file
 
 ## Load the relevant modules needed for the job
-module purge
-module load python/3.7.4
-##module load anaconda3/latest
-##python -m pip install --upgrade pip
-##pip install pandas --user
-##pip install pyarrow --user
-
-##pip install ipython --user #not satisfied
-
-
-##pip install numpy --user
-##pip install scipy --user
-pip install ptyprocess --user
-##pip install six --user
-##pip install --upgrade patsy --user
-pip install PyWavelets --user
-pip install statsmodels --user
-pip install -U matplotlib --user
-pip install seaborn --user
-
 
 
 ## Run your program or script
-python3 test1.py $SCRATCH/test.out
+python3 test1.py $SCRATCH/test1.out
+
 
 
 
