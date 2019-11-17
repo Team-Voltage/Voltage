@@ -129,17 +129,17 @@ print(train_X.shape, train_y.shape, test_X.shape, test_y.shape)
 
 
 
-def matthews_correlation(inv_yhat, yhat):
+def matthews_correlation(inv_y, inv_yhat):
     '''Calculates the Matthews correlation coefficient measure for quality
     of binary classification problems.
     '''
-    yhat = tf.convert_to_tensor(yhat, np.float32)
     inv_yhat = tf.convert_to_tensor(inv_yhat, np.float32)
+    inv_y = tf.convert_to_tensor(inv_y, np.float32)
     
-    y_pred_pos = K.round(K.clip(yhat, 0, 1))
+    y_pred_pos = K.round(K.clip(inv_yhat, 0, 1))
     y_pred_neg = 1 - y_pred_pos
 
-    y_pos = K.round(K.clip(inv_yhat, 0, 1))
+    y_pos = K.round(K.clip(inv_y, 0, 1))
     y_neg = 1 - y_pos
 
     tp = K.sum(y_pos * y_pred_pos)
