@@ -128,13 +128,41 @@ print(train_X.shape, train_y.shape, test_X.shape, test_y.shape)
 
 
 
+def matthews_correlation(y_true, y_pred):
+    '''Calculates the Matthews correlation coefficient measure for quality
+    of binary classification problems.
+    '''
+    y_pred = tf.convert_to_tensor(y_pred, np.float32)
+    y_true = tf.convert_to_tensor(y_true, np.float32)
+    
+    y_pred_pos = K.round(K.clip(y_pred, 0, 1))
+    y_pred_neg = 1 - y_pred_pos
+
+    y_pos = K.round(K.clip(y_true, 0, 1))
+    y_neg = 1 - y_pos
+
+    tp = K.sum(y_pos * y_pred_pos)
+    tn = K.sum(y_neg * y_pred_neg)
+
+    fp = K.sum(y_neg * y_pred_pos)
+    fn = K.sum(y_pos * y_pred_neg)
+
+    numerator = (tp * tn - fp * fn)
+    denominator = K.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
+
+    return numerator / (denominator + K.epsilon())
+
+
+
+
+
 
 
 # design network
 model = Sequential()
 model.add(LSTM(50, input_shape=(train_X.shape[1], train_X.shape[2])))
 model.add(Dense(1))
-model.compile(loss='mae', optimizer='adam')
+model.compile(loss='mae', optimizer='adam', metrics=[matthews_correlation])
 # fit network
 history = model.fit(train_X, train_y, epochs=50, batch_size=72, validation_data=(test_X, test_y), verbose=2, shuffle=False)
 # plot history
