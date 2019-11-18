@@ -265,6 +265,16 @@ X_test=X_test.drop(['signal_id', 'id_measurement', 'target', 'phase'], axis=1)
 X_test_1 = X_test.values
 
 
+# integer encode direction
+encoder = LabelEncoder()
+X_test_1[:,4] = encoder.fit_transform(X_test_1[:,4])
+# ensure all data is float
+X_test_1 = X_test_1.astype('float32')
+
+
+
+
+scaled = scaler.fit_transform(X_test_1)
 
 
 
