@@ -21,3 +21,20 @@ def preprocess_df(df):
 
 
     print(df)
+
+
+
+
+
+#Convert dataframe into values
+values = df.values
+
+
+
+# integer encode direction
+encoder = LabelEncoder()
+values[:,4] = encoder.fit_transform(values[:,4])
+# ensure all data is float
+values = values.astype('float32')
+#train = train.astype('float32')
+#test = test.astype('float32')
