@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python -m virtualenv test-site-virtualenv-3.7.4-no-sys-pack
+#python -m virtualenv test-site-virtualenv-3.7.4-no-sys-pack
 
 source test-site-virtualenv-3.7.4-no-sys-pack/bin/activate
 
