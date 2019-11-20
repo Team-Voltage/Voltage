@@ -1,27 +1,16 @@
-def preprocess_df(df):
-    
-    
-    
-    # integer encode direction
-    #encoder = LabelEncoder()
-    #df[:,4] = encoder.fit_transform(df[:,4])
-    
-    #normalizing data
-    df = preprocessing.normalize(df, norm='l2', axis=1, copy=True, return_norm=False)
-    df = pd.DataFrame(df)
-    
-    
-    #Scaling the data to be between zero and one
-    scaler = MinMaxScaler(feature_range=(0, 1))
-    scaled = scaler.fit_transform(df)
-    
-    
+#Split data into test train
+
+df['signal_id'] = signal_id
+
+idx = df.groupby('signal_id').apply(lambda x: x.sample(frac=0.2, random_state = 0)).index.get_level_values(1)
+test_1 = df[df['signal_id'].isin(idx)]
+train_1 = df[~df['signal_id'].isin(idx)]
 
 
-
-
-    print(df)
-
+#drop signal id
+train_1=train_1.drop(['signal_id'], axis=1)
+test_1=test_1.drop(['signal_id'], axis=1)
+df=df.drop(['signal_id'], axis=1)
 
 
 
@@ -29,6 +18,8 @@ def preprocess_df(df):
 #Convert dataframe into values
 values = df.values
 
+train = train_1.values
+test = test_1.values
 
 
 # integer encode direction
@@ -36,5 +27,57 @@ encoder = LabelEncoder()
 values[:,4] = encoder.fit_transform(values[:,4])
 # ensure all data is float
 values = values.astype('float32')
-#train = train.astype('float32')
-#test = test.astype('float32')
+train = train.astype('float32')
+test = test.astype('float32')
+
+
+
+
+# frame as supervised learning
+reframed = series_to_supervised(values, 1, 1)
+# drop columns we don't want to predict
+# reframed.drop(reframed.columns[[9,10,11,12,13,14,15]], axis=1, inplace=True)
+print(reframed.head())
+
+
+
+
+
+values = reframed.values
+
+
+
+# split into input and outputs
+train_X, train_y = train[:, :-1], train[:, -1]
+test_X, test_y = test[:, :-1], test[:, -1]
+# reshape input to be 3D [samples, timesteps, features]
+train_X = train_X.reshape((train_X.shape[0], 1, train_X.shape[1]))
+test_X = test_X.reshape((test_X.shape[0], 1, test_X.shape[1]))
+print(train_X.shape, train_y.shape, test_X.shape, test_y.shape)
+
+
+
+def matthews_correlation(inv_y, inv_yhat):
+    '''Calculates the Matthews correlation coefficient measure for quality
+    of binary classification problems.
+    '''
+    inv_yhat = tf.convert_to_tensor(inv_yhat, np.float32)
+    inv_y = tf.convert_to_tensor(inv_y, np.float32)
+    
+    y_pred_pos = K.round(K.clip(inv_yhat, 0, 1))
+    y_pred_neg = 1 - y_pred_pos
+
+    y_pos = K.round(K.clip(inv_y, 0, 1))
+    y_neg = 1 - y_pos
+
+    tp = K.sum(y_pos * y_pred_pos)
+    tn = K.sum(y_neg * y_pred_neg)
+
+    fp = K.sum(y_neg * y_pred_pos)
+    fn = K.sum(y_pos * y_pred_neg)
+
+    numerator = (tp * tn - fp * fn)
+    denominator = K.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
+
+    return numerator / (denominator + K.epsilon())
+
