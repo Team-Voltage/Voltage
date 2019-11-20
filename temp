@@ -1,0 +1,23 @@
+def preprocess_df(df):
+    
+    
+    
+    # integer encode direction
+    #encoder = LabelEncoder()
+    #df[:,4] = encoder.fit_transform(df[:,4])
+    
+    #normalizing data
+    df = preprocessing.normalize(df, norm='l2', axis=1, copy=True, return_norm=False)
+    df = pd.DataFrame(df)
+    
+    
+    #Scaling the data to be between zero and one
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    scaled = scaler.fit_transform(df)
+    
+    
+
+
+
+
+    print(df)
