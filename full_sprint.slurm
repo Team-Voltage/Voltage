@@ -17,7 +17,7 @@
 ## Specify the name for your job, this is the job name by which Slurm will
 ## refer to your job.  This can be different from the name of your executable
 ## or the name of your script file.
-#SBATCH --job-name=jlartey
+#SBATCH --job-name=preprocessing
 
 ## General partitions: all-LoPri, all-HiPri, bigmem-LoPri, bigmem-HiPri, gpuq
 ##    all-*     Will run jobs on (almost) any node available
@@ -41,8 +41,8 @@
 ## You can improve your scheduling priority by specifying upper limits on
 ## needed resources, but jobs that exceed these values will be terminated.
 ## Check your "Job Ended" emails for actual resource usage info as a guide.
-#SBATCH --mem=150G        # Total memory needed per task (units: K,M,G,T)
-#SBATCH --time=0-05:00  # Total time needed for job: Days-Hours:Minutes
+#SBATCH --mem=1T        # Total memory needed per task (units: K,M,G,T)
+#SBATCH --time=0-10:00  # Total time needed for job: Days-Hours:Minutes
 
 ## ##### Optional stuff #####
 ## From this point on, Slurm SBATCH commands are commented out (ignored).
@@ -66,7 +66,8 @@
 ##SBATCH --cpus-per-task <C>   # Request extra CPUs for threads
 ##SBATCH --mem-per-cpu <M>     # If your threads us a lot of memory, and you
                                # plan to vary # of threads, use this not --mem=
-#SBATCH --cpus-per-task=30
+#SBATCH --cpus-per-task=20
+
 
 ## ----- Parallel Processes  -----
 ## Some libraries (MPI) implement parallelism using processes that communicate.
@@ -74,7 +75,7 @@
 ## use this approach in combination with threads (if designed to).
 ## In that case, use parameters from here and the "Parallel Threads" section.
 ##SBATCH --ntasks <T>          # Number of processes you plan to launch
-##SBATCH --nodes <N>           # If you want some control over how tasks are
+#SBATCH --nodes=1          # If you want some control over how tasks are
                                #    distributed on nodes.  <T> >= <N>
 ##SBATCH --ntasks-per-node <Z> # If you want more control over how tasks are
                                #    distributed on nodes.  <T> = <N> * <Z>
@@ -89,10 +90,11 @@
 ##SBATCH --error=/scratch/%u/%x-%N-%A-%a.err   # Error file
 
 ## Load the relevant modules needed for the job
+module load python/3.7.4
 
 
 ## Run your program or script
-python3 test1.py $SCRATCH/test1.out
+python3 preprocessing.py
 
 
 
